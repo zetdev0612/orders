@@ -1,9 +1,14 @@
-FROM eclipse-temurin:17-jdk-alpine
-
+# Etapa 1: build
+FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
 
-COPY target/orders-0.0.1-SNAPSHOT.jar app.jar
-
+# Etapa 2: runtime
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
-ENTRYPOINT ["java","-jar","app.jar"]
